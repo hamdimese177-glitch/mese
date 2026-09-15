@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Property Rush Online</title>
+<style>
+:root{--bg:#07111f;--panel:#111827;--panel2:#172033;--text:#f8fafc;--muted:#94a3b8;--line:#334155;--accent:#22c55e}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:radial-gradient(circle at top,#10223f,#020617 55%);color:var(--text);min-height:100vh}
+button,input,select{font:inherit} button{border:0;border-radius:10px;padding:10px 13px;background:#2563eb;color:white;font-weight:800;cursor:pointer} button:disabled{opacity:.45}
+input,select{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0b1220;color:white}
+.wrap{max-width:1200px;margin:auto;padding:20px}.panel{background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:18px;padding:18px}.hidden{display:none!important}
+.home{max-width:620px;margin:50px auto}.row{display:flex;gap:10px;flex-wrap:wrap}.stack{display:grid;gap:12px}.muted{color:var(--muted)}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}.layout{display:grid;grid-template-columns:1fr 310px;gap:14px}
+.hand{display:flex;gap:10px;overflow:auto;padding:8px 0 16px}.card{min-width:150px;max-width:150px;min-height:230px;border-radius:16px;padding:11px;border:2px solid rgba(255,255,255,.1);background:#182235;cursor:pointer}
+.card.property.red{background:linear-gradient(#7f1d1d,#111827)}.card.property.blue{background:linear-gradient(#1e3a8a,#111827)}.card.property.green{background:linear-gradient(#14532d,#111827)}.card.property.yellow{background:linear-gradient(#713f12,#111827)}.card.property.purple{background:linear-gradient(#581c87,#111827)}
+.card.money{background:linear-gradient(#14532d,#111827)}.card.action{background:linear-gradient(#312e81,#111827)}
+.art{height:82px;border:1px solid rgba(255,255,255,.12);border-radius:12px;margin:7px 0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.07);font-size:42px}
+.card h3{font-size:16px;margin:4px 0}.small{font-size:12px}.players{display:grid;gap:10px}.player{padding:12px;border:1px solid var(--line);border-radius:13px;background:#0b1220}.player.current{outline:2px solid var(--accent)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.chip{font-size:12px;background:#1e293b;border:1px solid #475569;padding:5px 7px;border-radius:99px}.log{height:280px;overflow:auto;background:#020617;border:1px solid var(--line);padding:10px;border-radius:11px;font-size:13px}
+.modal{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;padding:18px}.modalbox{max-width:520px;width:100%;background:#111827;border:1px solid var(--line);padding:18px;border-radius:16px}.opts{display:grid;gap:8px}
+.error{position:fixed;right:18px;bottom:18px;background:#991b1b;padding:12px 16px;border-radius:12px;max-width:360px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.card{min-width:138px;max-width:138px}}
+
+/* Mobile-first improvements */
+html,body{overscroll-behavior:none}
+body{padding-bottom:env(safe-area-inset-bottom)}
+.wrap{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+button{min-height:46px;touch-action:manipulation}
+.card{touch-action:manipulation}
+.mobile-actions{position:sticky;bottom:0;z-index:10;background:rgba(7,17,31,.96);backdrop-filter:blur(12px);padding:10px 0 calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.room-code-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.room-code{font-size:20px;font-weight:900;letter-spacing:.12em;background:#0b1220;border:1px solid var(--line);padding:8px 10px;border-radius:10px}
+.copy-btn{background:#475569}
+@media(max-width:850px){
+  .wrap{padding-top:10px;padding-bottom:110px}
+  .panel{padding:14px;border-radius:14px}
+  .home{margin:14px auto}
+  .home h1{font-size:28px;margin-top:0}
+  .top{align-items:flex-start;flex-direction:column}
+  .layout{grid-template-columns:1fr}
+  .layout aside{order:2}
+  .hand{gap:8px;margin-left:-2px;margin-right:-2px;padding-bottom:10px}
+  .card{min-width:142px;max-width:142px;min-height:218px;padding:10px}
+  .art{height:72px;font-size:36px}
+  .row.mobile-actions{display:grid;grid-template-columns:1fr 1fr}
+  .row.mobile-actions #status{grid-column:1/-1;text-align:center}
+  #draw,#end{width:100%;font-size:16px}
+  .player{padding:10px}
+  .log{height:180px}
+}
+@media(max-width:430px){
+  .card{min-width:132px;max-width:132px}
+  .card h3{font-size:14px}
+  .small{font-size:11px}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<section id="home" class="panel home">
+<h1>Property Rush Online</h1>
+<p class="muted">Özgün, hızlı emlak kart oyunu. Oda koduyla arkadaşların aynı oyuna bağlanabilir.</p>
+<div class="stack">
+<input id="name" placeholder="Oyuncu adı" value="Oyuncu">
+<div class="row">
+<button id="create">Oda Oluştur</button>
+<input id="code" placeholder="ODA KODU" maxlength="5" style="text-transform:uppercase">
+<button id="join">Odaya Katıl</button>
+</div>
+</div>
+</section>
+
+<section id="game" class="hidden">
+<div class="top">
+<div>
+<h2 style="margin:0">Property Rush Online</h2>
+<div class="room-code-box">
+  <span class="muted">Oda kodu:</span>
+  <span id="roomcode" class="room-code">-----</span>
+  <button id="copyCode" class="copy-btn" type="button">Kodu Kopyala</button>
+</div>
+<div id="roomline" class="muted"></div>
+</div>
+<button id="start" class="hidden">Oyunu Başlat</button>
+</div>
+<div class="layout">
+<main class="panel">
+<div class="row mobile-actions">
+<button id="draw">2 Kart Çek</button>
+<button id="end">Turu Bitir</button>
+<span id="status" class="chip"></span>
+</div>
+<h3>Elin</h3>
+<div id="hand" class="hand"></div>
+<h3>Oyuncular</h3>
+<div id="players" class="players"></div>
+</main>
+<aside class="panel">
+<h3>Oyun</h3>
+<div id="deck" class="muted"></div>
+<h3>Olaylar</h3>
+<div id="log" class="log"></div>
+</aside>
+</div>
+</section>
+</div>
+
+<div id="modal" class="modal hidden">
+<div class="modalbox">
+<h3 id="mtitle"></h3>
+<p id="mtext" class="muted"></p>
+<div id="mopts" class="opts"></div>
+</div>
+</div>
+<div id="error" class="error hidden"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket=io(); let state=null;
+const $=s=>document.querySelector(s);
+
+$("#create").onclick=()=>socket.emit("createRoom",{name:$("#name").value.trim()||"Oyuncu"});
+$("#join").onclick=()=>socket.emit("joinRoom",{code:$("#code").value,name:$("#name").value.trim()||"Oyuncu"});
+$("#start").onclick=()=>socket.emit("startGame");
+$("#draw").onclick=()=>socket.emit("draw2");
+$("#end").onclick=()=>socket.emit("endTurn");
+
+$("#copyCode").onclick=async()=>{
+  if(!state?.code) return;
+  try{
+    await navigator.clipboard.writeText(state.code);
+    showError("Oda kodu kopyalandı.");
+  }catch{
+    showError("Oda kodu: "+state.code);
+  }
+};
+
+
+socket.on("errorMsg",showError);
+socket.on("state",s=>{state=s;render()});
+
+function me(){return state.players.find(p=>p.id===socket.id)}
+function current(){return state.players[state.currentIndex]}
+
+function render(){
+  $("#home").classList.add("hidden"); $("#game").classList.remove("hidden");
+  $("#roomcode").textContent=state.code; $("#roomline").textContent="Bu kodu arkadaşlarınla paylaş.";
+  $("#start").classList.toggle("hidden", state.started || state.hostId!==socket.id);
+  $("#draw").disabled=!state.started || current()?.id!==socket.id || state.drawn || !!state.winnerId;
+  $("#end").disabled=!state.started || current()?.id!==socket.id || !state.drawn || !!state.winnerId;
+  $("#status").textContent=state.winnerId ? `Kazanan: ${state.players.find(p=>p.id===state.winnerId)?.name}` :
+    state.started ? `Sıra: ${current()?.name} • Oynama: ${state.plays}/3` : "Oyuncular bekleniyor";
+  $("#deck").textContent=`Deste: ${state.deckCount} kart`;
+
+  const hand=$("#hand"); hand.innerHTML="";
+  (me()?.hand||[]).forEach(card=>{
+    const d=document.createElement("div"); d.className=`card ${card.type} ${card.color||""}`;
+    const icon=card.type==="property"?"🏙️":card.type==="money"?"💵":card.action==="rent"?"🏠":card.action==="steal"?"↔️":"🃏";
+    d.innerHTML=`<div class="small">${card.type==="property"?"MÜLK":card.type==="money"?"PARA":"AKSİYON"}</div><div class="art">${icon}</div><h3>${card.name}</h3><div class="muted small">${card.value}M değer</div>`;
+    d.onclick=()=>play(card);
+    hand.appendChild(d);
+  });
+
+  const ps=$("#players"); ps.innerHTML="";
+  state.players.forEach(p=>{
+    const d=document.createElement("div"); d.className="player"+(p.isCurrent?" current":"");
+    const sets=Object.entries(p.properties).map(([c,n])=>`<span class="chip">${state.colors[c].name}: ${n}/${state.colors[c].need}</span>`).join("");
+    d.innerHTML=`<strong>${esc(p.name)}${p.id===socket.id?" (sen)":""}</strong><div class="muted">Banka: ${p.bankValue}M • El: ${p.handCount} • Tam set: ${p.completeSets}/3</div><div class="chips">${sets}</div>`;
+    ps.appendChild(d);
+  });
+
+  $("#log").innerHTML=state.logs.map(x=>`<div>• ${esc(x)}</div>`).join("");
+}
+
+function play(card){
+  if(!state.started || current()?.id!==socket.id) return showError("Sıra sende değil.");
+  if(!state.drawn) return showError("Önce 2 kart çekmelisin.");
+  if(state.plays>=3) return showError("Bu tur 3 kart oynadın.");
+
+  if(card.action==="rent"){
+    const owned=Object.entries(me().properties).filter(([c,n])=>n>0);
+    if(!owned.length) return showError("Kira için önce bir mülkün olmalı.");
+    choose("Kira rengi","Bir renk seç",owned.map(([c,n])=>({label:`${state.colors[c].name} (${n})`,value:c})),color=>{
+      const targets=state.players.filter(p=>p.id!==socket.id);
+      choose("Kira hedefi","Bir oyuncu seç",targets.map(p=>({label:p.name,value:p.id})),targetId=>{
+        socket.emit("playCard",{cardId:card.id,targetId,color});
+      });
+    });
+  } else if(card.action==="steal"){
+    const targets=state.players.filter(p=>p.id!==socket.id);
+    choose("Hedef","Bir oyuncu seç",targets.map(p=>({label:p.name,value:p.id})),targetId=>{
+      const t=state.players.find(p=>p.id===targetId);
+      const colors=Object.entries(t.properties).filter(([c,n])=>n>0 && n<state.colors[c].need);
+      if(!colors.length) return showError("Bu oyuncuda alınabilir mülk yok.");
+      choose("Mülk","Bir renk seç",colors.map(([c,n])=>({label:`${state.colors[c].name} (${n})`,value:c})),color=>{
+        socket.emit("playCard",{cardId:card.id,targetId,color});
+      });
+    });
+  } else {
+    socket.emit("playCard",{cardId:card.id});
+  }
+}
+
+function choose(title,text,options,cb){
+  $("#mtitle").textContent=title; $("#mtext").textContent=text; const box=$("#mopts"); box.innerHTML="";
+  options.forEach(o=>{const b=document.createElement("button"); b.textContent=o.label; b.onclick=()=>{closeModal();cb(o.value)}; box.appendChild(b)});
+  const c=document.createElement("button"); c.textContent="İptal"; c.onclick=closeModal; box.appendChild(c);
+  $("#modal").classList.remove("hidden");
+}
+function closeModal(){ $("#modal").classList.add("hidden") }
+function showError(msg){ const e=$("#error");e.textContent=msg;e.classList.remove("hidden");setTimeout(()=>e.classList.add("hidden"),2600)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+</script>
+</body>
+</html>
