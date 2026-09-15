@@ -8,4 +8,3 @@ services:
     startCommand: npm start
     healthCheckPath: /
     autoDeploy: true
-    rootDir: property_rush_mobile_online
